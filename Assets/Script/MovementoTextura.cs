@@ -18,4 +18,5 @@ public class MovementoTextura : MonoBehaviour
     {
         rend.material.mainTextureOffset = new Vector2(speedX*Time.timeSinceLevelLoad,speedY*Time.timeSinceLevelLoad);
     }
+    
 }

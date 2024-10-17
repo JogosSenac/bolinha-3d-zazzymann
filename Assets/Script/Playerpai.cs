@@ -1,10 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Cinemachine;
-using Unity.Mathematics;
-using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,7 +13,7 @@ public class Playerpai : MonoBehaviour
     private GameObject[] moedasT;
     private Vector3[] moedasL;
     public GameObject moedaFeb;
-    public CinemachineVirtualCamera camera;
+    public CinemachineVirtualCamera camerap;
     
     // Start is called before the first frame update
     void Start()
@@ -34,14 +29,15 @@ public class Playerpai : MonoBehaviour
         if(player != null){
             //Debug.Log("Player: "+player.name);
             telaMorte.gameObject.SetActive(false);
-            camera.m_Follow = player.GetComponent<Transform>();
-            camera.m_LookAt = player.GetComponent<Transform>();
+            camerap.m_Follow = player.GetComponent<Transform>();
+            camerap.m_LookAt = player.GetComponent<Transform>();
         }else{
             telaMorte.gameObject.SetActive(true);
             player = GameObject.FindWithTag("Player");
         }
     }
     public void ReSpawn(){
+        Debug.LogWarning("Botao ReSpawn Apertado");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     private void buscarPlayerEMoedas(){

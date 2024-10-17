@@ -58,11 +58,6 @@ public class BolaMove : MonoBehaviour
             puloAutorized = true;
         }else if(other.gameObject.CompareTag("agua")){
             Destroy(this.gameObject);
-        }else if (other.gameObject.CompareTag("Void")){
-            if (moedas <= 2)
-            {
-                SceneManager.LoadScene(2);
-            }
         }
     }
 
@@ -72,6 +67,12 @@ public class BolaMove : MonoBehaviour
         {
             moedas++;
             Destroy(other.gameObject); 
+        }
+        if (other.gameObject.CompareTag("Void")){
+            if (moedas <= 2)
+            {
+                SceneManager.LoadScene(2);
+            }
         }
     }
 }

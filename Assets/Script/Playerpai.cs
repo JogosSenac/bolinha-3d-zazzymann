@@ -29,9 +29,8 @@ public class Playerpai : MonoBehaviour
         if(player != null){
             //Debug.Log("Player: "+player.name);
             telaMorte.gameObject.SetActive(false);
-            camerap.m_Follow = player.GetComponent<Transform>();
-            camerap.m_LookAt = player.GetComponent<Transform>();
         }else{
+            Cursor.lockState = CursorLockMode.None;
             telaMorte.gameObject.SetActive(true);
             player = GameObject.FindWithTag("Player");
         }

@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Playing2.unity
     guid: 53bfc2f375421d0439c0de73839ab55b
+  - enabled: 1
+    path: Assets/Scenes/agradecimentos.unity
+    guid: 3e88caa436be7414986b665d3eb66bb9
   m_configObjects: {}

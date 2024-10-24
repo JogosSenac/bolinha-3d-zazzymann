@@ -1,9 +1,8 @@
-using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using System.Linq;
 
 public class BolaMove : MonoBehaviour
 {
@@ -12,52 +11,77 @@ public class BolaMove : MonoBehaviour
     private Rigidbody rb;
     [SerializeField] private float velocidade;
     [SerializeField] private float forcaPulo;
-    private bool puloAutorized = true;
-    int moedas;
-    AudioSource pulo;
-    public string moedasT;
-    public TextMeshProUGUI moedastexto;
+    private bool puloAutorizado = true;
+    [SerializeField] private int moedas;
+    private List<GameObject> moedasTotal;
+    private Camera cam;
+    private AudioSource pulo;
+    public TextMeshProUGUI moedasTexto;
+
     void Start()
     {
+        moedasTotal = GameObject.FindGameObjectsWithTag("moeda").ToList<GameObject>();
         rb = GetComponent<Rigidbody>();
         pulo = GetComponent<AudioSource>();
-        moedasT = GameObject.FindGameObjectsWithTag("moeda").Length.ToString();
-        moedastexto = GameObject.FindGameObjectWithTag("TextoMoedas").GetComponent<TextMeshProUGUI>();
+        moedasTexto = GameObject.FindGameObjectWithTag("TextoMoedas").GetComponent<TextMeshProUGUI>();
+        cam = Camera.main;
+        AtualizarTextoMoedas();
     }
 
-        void Update()
+    void FixedUpdate()
+    {
+        MoverBola();
+        Pular();
+    }
+
+    private void MoverBola()
     {
         moveH = Input.GetAxis("Horizontal");
         moveV = Input.GetAxis("Vertical");
+        if(cam != null){
+            Vector3 direcao = cam.transform.right * moveH + cam.transform.forward * moveV;
+            direcao.y = 0;
+            direcao.Normalize();
+            rb.velocity = new Vector3(direcao.x * velocidade, rb.velocity.y, direcao.z * velocidade);
 
-        // Movimento da bola
-        transform.position += new Vector3(moveV * velocidade * Time.deltaTime, 0, -moveH * velocidade * Time.deltaTime);
-
-        // Rotacionar a bola
-        if (moveH != 0 || moveV != 0)
+        if (direcao.magnitude > 0)
         {
-            Vector3 direction = new Vector3(moveV, 0, -moveH).normalized;
-            Quaternion toRotation = Quaternion.LookRotation(direction, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotation, 360 * Time.deltaTime);
+            Quaternion rotacaoAlvo = Quaternion.LookRotation(direcao);
+            transform.rotation = Quaternion.Slerp(transform.rotation, rotacaoAlvo, Time.deltaTime * 10);
         }
+        }else{
+            transform.position += new Vector3(moveV * velocidade * Time.deltaTime, 0, -moveH * velocidade * Time.deltaTime);
+        }
+    }
 
-        // Pulo
-        if (Input.GetKeyDown(KeyCode.Space) && puloAutorized)
+    private void Pular()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && puloAutorizado)
         {
             pulo.Play();
-            rb.AddForce(transform.up * forcaPulo, ForceMode.Impulse);
-            puloAutorized = false;
+            rb.AddForce(Vector3.up * forcaPulo, ForceMode.Impulse);
+            puloAutorizado = false; // Desativa o pulo
         }
-        moedastexto.text = $"{moedas}/{moedasT}";
+
+        AtualizarTextoMoedas();
+    }
+
+    private void AtualizarTextoMoedas()
+    {
+        moedasTexto.text = $"{moedas}/{moedasTotal.Count}";
     }
 
     void OnCollisionEnter(Collision other)
     {
         if (other.gameObject.CompareTag("chao"))
         {
-            puloAutorized = true;
-        }else if(other.gameObject.CompareTag("agua")){
-            Destroy(this.gameObject);
+            puloAutorizado = true; // Ativa o pulo ao colidir com o chão
+        } else{
+            puloAutorizado = false;
+        }
+        if (other.gameObject.CompareTag("agua"))
+        {
+            Destroy(gameObject);
         }
     }
 
@@ -66,13 +90,31 @@ public class BolaMove : MonoBehaviour
         if (other.gameObject.CompareTag("moeda"))
         {
             moedas++;
-            Destroy(other.gameObject); 
+            Destroy(other.gameObject);
+            AtualizarTextoMoedas();
         }
-        if (other.gameObject.CompareTag("Void")){
-            if (moedas <= 2)
+
+        VerificarTrocaDeCena(other);
+    }
+
+    private void VerificarTrocaDeCena(Collider other)
+    {
+        if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1))
+        {
+            if (other.gameObject.CompareTag("Void") && moedas >= moedasTotal.Count)
             {
-                SceneManager.LoadScene(2);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
             }
+        }
+        
+    }
+
+    // Verifica se a bola está no chão
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("chao"))
+        {
+            puloAutorizado = true; // Permite pular enquanto está em contato com o chão
         }
     }
 }
